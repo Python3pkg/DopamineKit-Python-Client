@@ -84,8 +84,6 @@ class Dopamine(object):
 
         # launch POST request
         url = '{}/v2/app/{}/{}/'.format(self._server_url, self.appID, call_type)
-        #if call_type == 'reinforce':
-            #url = '{}/v2/app/{}a/{}/'.format(self._server_url, self.appID, call_type)
 
         if self._debug:
             print('[Debug] api call, type: {}'.format(call_type))
