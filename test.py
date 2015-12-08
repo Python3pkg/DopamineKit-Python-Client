@@ -1,24 +1,39 @@
 import json
 
-from dopamine import Dopamine, STATUS_OK
+from dopamine import Dopamine
+
+api_key = '543715d85b6b234b6e2c83ee'
+dev_key = '12be497b39cb5b8a3b7ccbc5129b24a0ee166706'
+prod_key = 'fdb803e8384f9cf7015e9b28e828ece3074df6e8'
+token = '32284346502274275543715d85b6b234b6e2c83ee'
 
 # Create the Dopamine object
-dopamineInstance = Dopamine("565fe47d0361f0bba4087f30", "f6849dcad26da272bfe488d49728b1851dfb37d9", "751cc30225f295fca8b04000113308999d6f3f18", "38284383807331325565fe47d0361f0bba4087f30", "newVersionID")
+dopa = Dopamine(api_key, dev_key, prod_key, token, "newVersionID")
 
 # Pair your actions and Reinforcement Functions
-dopamineInstance.pairAction({'actionName': 'newAction', 'rewardFunctions':['rf1', 'rf2'], 'feedbackFunctions':['ff1', 'ff2']})
+# dopa.pair_actions({'actionName': 'newAction', 'rewardFunctions':['rf1', 'rf2'], 'feedbackFunctions':['ff1', 'ff2']})
+dopa.pair_action_to_reinforcement('action_name', 'name_for_feeback_function_1', reward=False)
+dopa.pair_action_to_reinforcement('action_name', 'name_for_reward_function_1', reward=True, constraint=[], objective=[])
+dopa.pair_action_to_reinforcement('action_name', 'name_for_reward_function_2', reward=True, constraint=[], objective=[])
+
+dopa.pair_action_to_reinforcement('a_different_action_name', 'name_for_feeback_function_2', reward=False)
+dopa.pair_action_to_reinforcement('a_different_action_name', 'name_for_reward_function_3', reward=True, constraint=[], objective=[])
 
 # Send your init call
-# print dopamineInstance.init()
+dopa.init()
 
 # Send tracking call for analytics
-# print dopamineInstance.track([{'userID': 1138}], "testEvent1", [{'metaData':'value'}])
+dopa.track([{'userID': 1138}], "testEvent1", [{'metaData':'value'}])
 
+# Define reward functions
 def rewardFunctionOne():
     print "WOOHOO!"
 
 def rewardFunctionTwo():
     print "AWESOME!"
+
+def rewardFunctionThree():
+    print "WOW!"
 
 def feedbackFunctionOne():
     print "Acknowledged."
@@ -26,33 +41,21 @@ def feedbackFunctionOne():
 def feedbackFunctionTwo():
     print "Received."
 
-reinforcement = {
-    'rf1': rewardFunctionOne,
-    'rf2': rewardFunctionTwo,
-    'ff1': feedbackFunctionOne,
-    'ff2': feedbackFunctionTwo
+# Associate reward fucntions with their code-names
+reinforcement_functions = {
+    'name_for_reward_function_1': rewardFunctionOne,
+    'name_for_reward_function_2': rewardFunctionTwo,
+    'name_for_reward_function_3': rewardFunctionThree,
+    'name_for_feeback_function_1': feedbackFunctionOne,
+    'name_for_feeback_function_2': feedbackFunctionTwo
 }
 
 # Send reinforce call. Use response in a switch
-optimalReinforcement = json.loads(dopamineInstance.reinforce([{'userID': 1138}], "newAction", [{'metaData':'value'}]))
+response = dopa.reinforce([{'userID': 1137}], "action_name", [{'metaData':'value'}])
 
-if optimalReinforcement['status'] != STATUS_OK:
-    raise Exception('Error: communication error')
-
-if optimalReinforcement['rewardFunction'] not in reinforcement.keys():
+optimal_reinforcement = response
+if optimal_reinforcement['reinforcementFunction'] not in reinforcement_functions.keys():
     raise Exception('Error: reinforcement function not found.')
 else:
-    reinforcement[optimalReinforcement['reinforcementFunction']]()
+    reinforcement_functions[optimal_reinforcement['reinforcementFunction']]()
 
-if optimalReinforcement['status'] == STATUS_OK:
-    if optimalReinforcement['reinforcementFunction'] == 'rf1':
-        rewardFunctionOne()
-    elif optimalReinforcement['reinforcementFunction'] == 'rf2':
-        rewardFunctionTwo()
-    elif optimalReinforcement['reinforcementFunction'] == 'ff1':
-        feedbackFunctionOne()
-    elif optimalReinforcement['reinforcementFunction'] == 'ff2':
-        feedbackFunctionTwo()
-else:
-    print "COMMUNICATION ERROR"
-    #
