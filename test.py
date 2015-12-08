@@ -34,7 +34,7 @@ def feedbackFunctionOne():
 def feedbackFunctionTwo():
     print "Received."
 
-reinforcement = {
+reinforcement_functions = {
     'rf1': rewardFunctionOne,
     'rf2': rewardFunctionTwo,
     'ff1': feedbackFunctionOne,
@@ -43,9 +43,10 @@ reinforcement = {
 
 # Send reinforce call. Use response in a switch
 response = dopa.reinforce([{'userID': 1137}], "newAction", [{'metaData':'value'}])
-optimalReinforcement = json.loads(response)
-if optimalReinforcement['reinforcementFunction'] not in reinforcement.keys():
+
+optimal_reinforcement = json.loads(response)
+if optimal_reinforcement['reinforcementFunction'] not in reinforcement_functions.keys():
     raise Exception('Error: reinforcement function not found.')
 else:
-    reinforcement[optimalReinforcement['reinforcementFunction']]()
+    reinforcement_functions[optimal_reinforcement['reinforcementFunction']]()
 

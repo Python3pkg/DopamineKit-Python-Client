@@ -53,7 +53,7 @@ class Dopamine(object):
 
         return
 
-    def __call__(self, call_type, call_data, timeout=30):
+    def call(self, call_type, call_data, timeout=30):
         """
         sends a call to the api and returns the response as a string
         call_type - should be one of: init, track, reinforce
@@ -121,7 +121,7 @@ class Dopamine(object):
             'identity': [{'user': 'INIT'}]
         }
 
-        return self('init', init_call)
+        return self.call('init', init_call)
 
     def track(self, identity, eventName, metaData):
         """ tracking api call """
@@ -132,7 +132,7 @@ class Dopamine(object):
             'metaData': metaData
         }
 
-        return self('track', track_call)
+        return self.call('track', track_call)
 
     def reinforce(self, identity, eventName, metaData, timeout=10):
         """ reinforce api call, will respond with default feedback function if response fails """
@@ -143,7 +143,7 @@ class Dopamine(object):
             'metaData': metaData
         }
 
-        response = self('reinforce', reinforce_call, timeout=timeout)
+        response = self.call('reinforce', reinforce_call, timeout=timeout)
         if response:
             return response
 
