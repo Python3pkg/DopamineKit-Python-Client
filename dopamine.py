@@ -119,7 +119,7 @@ class Dopamine(object):
             'identity': [{'user': 'INIT'}]
         }
 
-        return self.call('init', init_call)
+        return json.loads(self.call('init', init_call))
 
     def track(self, identity, eventName, metaData):
         """ tracking api call """
@@ -130,7 +130,7 @@ class Dopamine(object):
             'metaData': metaData
         }
 
-        return self.call('track', track_call)
+        return json.loads(self.call('track', track_call))
 
     def reinforce(self, identity, eventName, metaData, timeout=10):
         """ reinforce api call, will respond with default feedback function if response fails """
@@ -143,7 +143,7 @@ class Dopamine(object):
 
         response = self.call('reinforce', reinforce_call, timeout=timeout)
         if response:
-            return response
+            return json.loads(response)
 
         for reinforcer in self.pairings[eventName]:
             if reinforcer['type'] == 'Feedback':
@@ -152,7 +152,7 @@ class Dopamine(object):
                     'reinforcementFunction': reinforcer['functionName']
                 }
 
-    def pair(self, action_name, function_name, reward=False, constraint=[], objective=[]):
+    def pair_action_to_reinforcement(self, action_name, function_name, reward=False, constraint=[], objective=[]):
         """ pair an action to a response function, set reward to true for reinforcing responses """
 
         pairing = {
@@ -189,29 +189,29 @@ class Dopamine(object):
             for name in self.actions
         ]
 
-    def pair_actions(self, pairing):
-        """ legacy function to maintain compatibility with old pairing format
-        pairing - [
-        {
-            actionName: [name],
-            feedbackFunctions: [f1, f2, ...],
-            rewardFunctions: [r1, r2, ...]
-        }, ... ]
-       """
+    # def pair_actions(self, pairing):
+    #     """ legacy function to maintain compatibility with old pairing format
+    #     pairing - [
+    #     {
+    #         actionName: [name],
+    #         feedbackFunctions: [f1, f2, ...],
+    #         rewardFunctions: [r1, r2, ...]
+    #     }, ... ]
+    #    """
 
-        if 'feedbackFunctions' in pairing:
-            [
-                self.pair(pairing['actionName'], function_name)
-                for function_name in pairing['feedbackFunctions']
-            ]
+    #     if 'feedbackFunctions' in pairing:
+    #         [
+    #             self.pair(pairing['actionName'], function_name)
+    #             for function_name in pairing['feedbackFunctions']
+    #         ]
 
-        if 'rewardFunctions' in pairing:
-            [
-                self.pair(pairing['actionName'], function_name, reward=True)
-                for function_name in pairing['rewardFunctions']
-            ]
+    #     if 'rewardFunctions' in pairing:
+    #         [
+    #             self.pair(pairing['actionName'], function_name, reward=True)
+    #             for function_name in pairing['rewardFunctions']
+    #         ]
 
-        return
+    #     return
 
 def make_time():
     """ return a dictionary with the current UTC and localTime """

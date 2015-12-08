@@ -11,10 +11,13 @@ token = '32284346502274275543715d85b6b234b6e2c83ee'
 dopa = Dopamine(api_key, dev_key, prod_key, token, "newVersionID")
 
 # Pair your actions and Reinforcement Functions
-dopa.pair_actions({'actionName': 'newAction', 'rewardFunctions':['rf1', 'rf2'], 'feedbackFunctions':['ff1', 'ff2']})
+# dopa.pair_actions({'actionName': 'newAction', 'rewardFunctions':['rf1', 'rf2'], 'feedbackFunctions':['ff1', 'ff2']})
+dopa.pair_action_to_reinforcement('action_name', 'name_for_feeback_function_1', reward=False)
+dopa.pair_action_to_reinforcement('action_name', 'name_for_reward_function_1', reward=True, constraint=[], objective=[])
+dopa.pair_action_to_reinforcement('action_name', 'name_for_reward_function_2', reward=True, constraint=[], objective=[])
 
-dopa.pair('anotherAction', 'anotherResponse', reward=False)
-dopa.pair('anotherAction', 'anotherReward', reward=True, constraint=[], objective=[])
+dopa.pair_action_to_reinforcement('a_different_action_name', 'name_for_feeback_function_2', reward=False)
+dopa.pair_action_to_reinforcement('a_different_action_name', 'name_for_reward_function_3', reward=True, constraint=[], objective=[])
 
 # Send your init call
 dopa.init()
@@ -22,11 +25,15 @@ dopa.init()
 # Send tracking call for analytics
 dopa.track([{'userID': 1138}], "testEvent1", [{'metaData':'value'}])
 
+# Define reward functions
 def rewardFunctionOne():
     print "WOOHOO!"
 
 def rewardFunctionTwo():
     print "AWESOME!"
+
+def rewardFunctionThree():
+    print "WOW!"
 
 def feedbackFunctionOne():
     print "Acknowledged."
@@ -34,17 +41,19 @@ def feedbackFunctionOne():
 def feedbackFunctionTwo():
     print "Received."
 
+# Associate reward fucntions with their code-names
 reinforcement_functions = {
-    'rf1': rewardFunctionOne,
-    'rf2': rewardFunctionTwo,
-    'ff1': feedbackFunctionOne,
-    'ff2': feedbackFunctionTwo
+    'name_for_reward_function_1': rewardFunctionOne,
+    'name_for_reward_function_2': rewardFunctionTwo,
+    'name_for_reward_function_3': rewardFunctionThree,
+    'name_for_feeback_function_1': feedbackFunctionOne,
+    'name_for_feeback_function_2': feedbackFunctionTwo
 }
 
 # Send reinforce call. Use response in a switch
-response = dopa.reinforce([{'userID': 1137}], "newAction", [{'metaData':'value'}])
+response = dopa.reinforce([{'userID': 1137}], "action_name", [{'metaData':'value'}])
 
-optimal_reinforcement = json.loads(response)
+optimal_reinforcement = response
 if optimal_reinforcement['reinforcementFunction'] not in reinforcement_functions.keys():
     raise Exception('Error: reinforcement function not found.')
 else:
