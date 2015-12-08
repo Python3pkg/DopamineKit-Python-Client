@@ -72,24 +72,17 @@ class Dopamine(object):
             'ClientOSVersion': self._client_os_version,
             'ClientAPIVersion' : self._client_sdk_version
         }
+
         if(self.inProduction):
             data['key'] = self.production_key
         else:
             data['key'] = self.dev_key
-
-        if(call_type == 'init'):
-            data['rewardFunctions'] = self.reward_functions
-            data['feedbackFunctions'] = self.feedback_functions
-            data['actionPairings'] = self.action_pairings()
 
         # add the specific call data
         data.update(call_data)
 
         # append the current local and utc timestamps
         data.update(make_time())
-
-        print self.build
-        print self.action_pairings()
 
         # launch POST request
         url = '{}/v2/app/{}/{}/'.format(self._server_url, self.appID, call_type)
@@ -99,10 +92,10 @@ class Dopamine(object):
 
         req = urllib2.Request(url, json.dumps(data), {'Content-Type': 'application/json'})
         try:
-            response = urllib2.urlopen(req, timeout=timeout).read()
-            data = json.loads(response)
+            raw_data = urllib2.urlopen(req, timeout=timeout).read()
+            response = json.loads(raw_data)
 
-            if data['status'] != STATUS['OK']:
+            if response['status'] != STATUS['OK']:
                 raise Exception('Error: request to dopamine api failed, bad status code.\n{}'.format(response))
 
         except urllib2.HTTPError:
@@ -125,12 +118,13 @@ class Dopamine(object):
         """ init api call, only needs to be run once to register app internally """
 
         init_call = {
-            'identity': [{'user': 'INIT'}]
+            'identity': [{'user': 'INIT'}],
+            'rewardFunctions': self.reward_functions,
+            'feedbackFunctions': self.feedback_functions,
+            'actionPairings': self.action_pairings()
         }
 
-        print self.build
-
-        return json.loads(self.call('init', init_call))
+        return self.call('init', init_call)
 
     def track(self, identity, eventName, metaData):
         """ tracking api call """
@@ -141,7 +135,7 @@ class Dopamine(object):
             'metaData': metaData
         }
 
-        return json.loads(self.call('track', track_call))
+        return self.call('track', track_call)
 
     def reinforce(self, identity, eventName, metaData, timeout=10):
         """ reinforce api call, will respond with default feedback function if response fails """
@@ -152,12 +146,11 @@ class Dopamine(object):
             'metaData': metaData
         }
 
-        print self.build
-
         response = self.call('reinforce', reinforce_call, timeout=timeout)
         if response:
-            return json.loads(response)
+            return response
 
+        # if the response from the server fails, use the first feedback (non-reward) function
         for reinforcer in self.pairings[eventName]:
             if reinforcer['type'] == 'Feedback':
                 return {
@@ -200,10 +193,11 @@ class Dopamine(object):
         return [
             {
                 'actionName': name,
-                'reinforcers': [
-                    dict(sorted(function.items()))
-                    for function in self.pairings[name]
-                ]
+                'reinforcers': self.pairings[name]
+                #'reinforcers': [
+                    #dict(sorted(function.items()))
+                    #for function in self.pairings[name]
+                #]
             }
             for name in self.actions
         ]
@@ -220,7 +214,7 @@ def make_time():
 def make_hash(obj):
     """ create a SHA1 hexadecimal digest of a JSON compatible object """
 
-    string = json.dumps(obj)
+    string = json.dumps(obj, sort_keys=True, indent=4, separators=(': ', ', '))
     hash_obj = hashlib.sha1(string);
     return hash_obj.hexdigest()
 
