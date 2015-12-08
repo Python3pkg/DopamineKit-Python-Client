@@ -2,13 +2,13 @@ import json
 
 from dopamine import Dopamine
 
-api_key = '543715d85b6b234b6e2c83ee'
+app_id = '543715d85b6b234b6e2c83ee'
 dev_key = '12be497b39cb5b8a3b7ccbc5129b24a0ee166706'
 prod_key = 'fdb803e8384f9cf7015e9b28e828ece3074df6e8'
 token = '32284346502274275543715d85b6b234b6e2c83ee'
 
 # Create the Dopamine object
-dopa = Dopamine(api_key, dev_key, prod_key, token, "newVersionID")
+dopa = Dopamine(app_id, dev_key, prod_key, token, "newVersionID")
 
 # Pair your actions and Reinforcement Functions
 # dopa.pair_actions({'actionName': 'newAction', 'rewardFunctions':['rf1', 'rf2'], 'feedbackFunctions':['ff1', 'ff2']})
