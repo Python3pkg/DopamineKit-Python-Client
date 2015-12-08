@@ -70,16 +70,18 @@ class Dopamine(object):
             'build': self.build,
             'ClientOS': self._client_os,
             'ClientOSVersion': self._client_os_version,
-            'ClientAPIVersion' : self._client_sdk_version,
-            'rewardFunctions': self.reward_functions,
-            'feedbackFunctions': self.feedback_functions,
-            'actionPairings': self.action_pairings()
+            'ClientAPIVersion' : self._client_sdk_version
         }
         if(self.inProduction):
             data['key'] = self.production_key
         else:
             data['key'] = self.dev_key
 
+        if(call_type == 'init'):
+            data['rewardFunctions'] = self.reward_functions
+            data['feedbackFunctions'] = self.feedback_functions
+            data['actionPairings'] = self.action_pairings()
+            
         # add the specific call data
         data.update(call_data)
 
