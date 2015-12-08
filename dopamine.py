@@ -38,13 +38,14 @@ class Dopamine(object):
 
     _debug = True               # debug flag set to true for console messages
 
-    def __init__(self, appID, dev_key, production_key, token, versionID='0.1', pairings=None):
+    def __init__(self, appID, dev_key, production_key, token, versionID='0.1', inProduction, pairings=None):
 
         self.appID = appID
         self.dev_key = dev_key
         self.production_key = production_key
         self.token = token
         self.versionID = versionID
+        self.inProduction = inProduction
 
         if isinstance(pairings, dict):
             pairings = [pairings]
@@ -64,7 +65,6 @@ class Dopamine(object):
         # prepare the api call data structure
         data = {
             'appID': self.appID,
-            'key': self.dev_key,
             'token': self.token,
             'versionID': self.versionID,
             'build': self.build,
@@ -75,6 +75,10 @@ class Dopamine(object):
             'feedbackFunctions': self.feedback_functions,
             'actionPairings': self.action_pairings()
         }
+        if(self.inProduction):
+            data['key'] = self.production_key
+        else:
+            data['key'] = self.dev_key
 
         # add the specific call data
         data.update(call_data)
