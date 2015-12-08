@@ -12,7 +12,7 @@ STATUS = {
 }
 
 class Dopamine(object):
-    # """
+    """
     # Dopamine API interface class
 
     # appID -
@@ -21,7 +21,7 @@ class Dopamine(object):
     # token -
     # versionID -
 
-    # """
+    """
 
     reward_functions = []       # list of all reward function names (positive reinforcers)
     feedback_functions = []     # list of all feedback function names (neutral reinforcement)
@@ -55,12 +55,12 @@ class Dopamine(object):
         return
 
     def call(self, call_type, call_data, timeout=30):
-        # """
+        """
         # sends a call to the api and returns the response as a string
         # call_type - should be one of: init, track, reinforce
         # call_data - dictionary of call specific data
         # timeout - in seconds
-        # """
+        """
 
         # prepare the api call data structure
         data = {
@@ -81,12 +81,15 @@ class Dopamine(object):
             data['rewardFunctions'] = self.reward_functions
             data['feedbackFunctions'] = self.feedback_functions
             data['actionPairings'] = self.action_pairings()
-            
+
         # add the specific call data
         data.update(call_data)
 
         # append the current local and utc timestamps
         data.update(make_time())
+
+        print self.build
+        print self.action_pairings()
 
         # launch POST request
         url = '{}/v2/app/{}/{}/'.format(self._server_url, self.appID, call_type)
@@ -119,16 +122,18 @@ class Dopamine(object):
         return response
 
     def init(self):
-        # """ init api call, only needs to be run once to register app internally """
+        """ init api call, only needs to be run once to register app internally """
 
         init_call = {
             'identity': [{'user': 'INIT'}]
         }
 
+        print self.build
+
         return json.loads(self.call('init', init_call))
 
     def track(self, identity, eventName, metaData):
-        # """ tracking api call """
+        """ tracking api call """
 
         track_call = {
             'identity': identity,
@@ -139,13 +144,15 @@ class Dopamine(object):
         return json.loads(self.call('track', track_call))
 
     def reinforce(self, identity, eventName, metaData, timeout=10):
-        # """ reinforce api call, will respond with default feedback function if response fails """
+        """ reinforce api call, will respond with default feedback function if response fails """
 
         reinforce_call = {
             'identity': identity,
             'eventName': eventName,
             'metaData': metaData
         }
+
+        print self.build
 
         response = self.call('reinforce', reinforce_call, timeout=timeout)
         if response:
@@ -159,7 +166,7 @@ class Dopamine(object):
                 }
 
     def pair_action_to_reinforcement(self, action_name, function_name, reward=False, constraint=[], objective=[]):
-        # """ pair an action to a response function, set reward to true for reinforcing responses """
+        """ pair an action to a response function, set reward to true for reinforcing responses """
 
         pairing = {
             'functionName': function_name,
@@ -188,15 +195,21 @@ class Dopamine(object):
         return
 
     def action_pairings(self):
-        # """ get the action pairings in the javascript friendly structure """
+        """ get the action pairings in the javascript friendly structure """
 
         return [
-            {'actionName': name, 'reinforcers': self.pairings[name]}
+            {
+                'actionName': name,
+                'reinforcers': [
+                    dict(sorted(function.items()))
+                    for function in self.pairings[name]
+                ]
+            }
             for name in self.actions
         ]
 
 def make_time():
-    # """ return a dictionary with the current UTC and localTime """
+    """ return a dictionary with the current UTC and localTime """
 
     utcDateTime = datetime.utcnow()
     return {
@@ -205,7 +218,7 @@ def make_time():
     }
 
 def make_hash(obj):
-    # """ create a SHA1 hexadecimal digest of a JSON compatible object """
+    """ create a SHA1 hexadecimal digest of a JSON compatible object """
 
     string = json.dumps(obj)
     hash_obj = hashlib.sha1(string);
