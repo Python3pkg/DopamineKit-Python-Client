@@ -17,6 +17,7 @@ dopa.pair_action_to_reinforcement('action_name', 'name_for_reward_function_2', r
 
 dopa.pair_action_to_reinforcement('a_different_action_name', 'name_for_feeback_function_2', reward=False)
 dopa.pair_action_to_reinforcement('a_different_action_name', 'name_for_reward_function_3', reward=True, constraint=[], objective=[])
+dopa.pair_action_to_reinforcement('a_different_action_name', 'name_for_reward_function_3', reward=True, constraint=[], objective=[])
 
 # Send your init call
 dopa.init()
