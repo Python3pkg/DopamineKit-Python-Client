@@ -22,6 +22,7 @@ class Dopamine(object):
     # versionID -
 
     """
+    # TODO: fill in descriptions of properties ^
 
     reward_functions = []       # list of all reward function names (positive reinforcers)
     feedback_functions = []     # list of all feedback function names (neutral reinforcement)
@@ -108,9 +109,6 @@ class Dopamine(object):
         except:
             return None
 
-        #if self._debug:
-            #print('[Debug] api response:\n{}'.format(response))
-
         return response
 
     def init(self):
@@ -196,13 +194,13 @@ class Dopamine(object):
 
         for pair in self.pairings.setdefault(action_name, []):
             if function_name == pair['functionName']:
-                #if self._debug:
-                    #print('[Debug] function {} already paired to action {}'.format(function_name, action_name))
+                if self._debug:
+                    print('[Debug] function {} already paired to action {}'.format(function_name, action_name))
                 break
         else:
             self.pairings[action_name].append(pairing)
-            #if self._debug:
-                #print('[Debug] function {} paired to action {}'.format(function_name, action_name))
+            if self._debug:
+                print('[Debug] function {} paired to action {}'.format(function_name, action_name))
 
         return
 
