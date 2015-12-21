@@ -22,12 +22,12 @@ class Dopamine(object):
     # versionID -
 
     """
+    # TODO: fill in descriptions of properties ^
 
     reward_functions = []       # list of all reward function names (positive reinforcers)
     feedback_functions = []     # list of all feedback function names (neutral reinforcement)
     identity = []
 
-    build = ""                  # SHA1 digest of JSON formatted action pairings, rebuilt on pair()
     actions = []                # [ actionName1, actionName2, actionName3, ... ]
     pairings = {}               # { actionName: [reinforcers], ... }
 
@@ -109,9 +109,6 @@ class Dopamine(object):
         except:
             return None
 
-        if self._debug:
-            print('[Debug] api response:\n{}'.format(response))
-
         return response
 
     def init(self):
@@ -121,7 +118,7 @@ class Dopamine(object):
             'identity': [{'user': 'INIT'}],
             'rewardFunctions': self.reward_functions,
             'feedbackFunctions': self.feedback_functions,
-            'actionPairings': self.action_pairings()
+            'actionPairings': self.action_pairings
         }
 
         return self.call('init', init_call)
@@ -158,6 +155,22 @@ class Dopamine(object):
                     'reinforcementFunction': reinforcer['functionName']
                 }
 
+    @property
+    def action_pairings(self):
+        """ get the action pairings in the javascript friendly structure """
+
+        return [
+            {
+                'actionName': name,
+                'reinforcers': self.pairings[name]
+            }
+            for name in self.actions
+        ]
+
+    @property
+    def build(self):
+        return make_hash(self.action_pairings)
+
     def pair_action_to_reinforcement(self, action_name, function_name, reward=False, constraint=[], objective=[]):
         """ pair an action to a response function, set reward to true for reinforcing responses """
 
@@ -179,28 +192,17 @@ class Dopamine(object):
             if function_name not in self.feedback_functions:
                 self.feedback_functions.append(function_name)
 
-        self.pairings.setdefault(action_name, []).append(pairing)
-        self.build = make_hash(self.action_pairings())
-
-        if self._debug:
-            print('[Debug] function {} paired to action {}'.format(function_name, action_name))
+        for pair in self.pairings.setdefault(action_name, []):
+            if function_name == pair['functionName']:
+                if self._debug:
+                    print('[Debug] function {} already paired to action {}'.format(function_name, action_name))
+                break
+        else:
+            self.pairings[action_name].append(pairing)
+            if self._debug:
+                print('[Debug] function {} paired to action {}'.format(function_name, action_name))
 
         return
-
-    def action_pairings(self):
-        """ get the action pairings in the javascript friendly structure """
-
-        return [
-            {
-                'actionName': name,
-                'reinforcers': self.pairings[name]
-                #'reinforcers': [
-                    #dict(sorted(function.items()))
-                    #for function in self.pairings[name]
-                #]
-            }
-            for name in self.actions
-        ]
 
 def make_time():
     """ return a dictionary with the current UTC and localTime """
