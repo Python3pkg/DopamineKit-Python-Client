@@ -16,45 +16,31 @@ class Dopamine(object):
     # Dopamine API interface class
 
     # appID -
-    # dev_key -
-    # production_key -
+    # dev_secret -
+    # production_secret -
     # token -
     # versionID -
 
     # """
 
-    reward_functions = []       # list of all reward function names (positive reinforcers)
-    feedback_functions = []     # list of all feedback function names (neutral reinforcement)
     identity = []
-
-    build = ""                  # SHA1 digest of JSON formatted action pairings, rebuilt on pair()
-    actions = []                # [ actionName1, actionName2, actionName3, ... ]
-    pairings = {}               # { actionName: [reinforcers], ... }
-
     _client_os = 'python'
     _client_os_version = sys.version
     _client_sdk_version = '0.1.0'
-    _server_url = 'https://api.usedopamine.com'
+    _server_url = 'https://staging-api.usedopamine.com'
 
     _debug = True               # debug flag set to true for console messages
 
-    def __init__(self, appID, dev_key, production_key, token, versionID, inProduction, pairings=None):
+    def __init__(self, appID, dev_secret, production_secret, versionID, inProduction):
 
         self.appID = appID
-        self.dev_key = dev_key
-        self.production_key = production_key
-        self.token = token
+        self.dev_secret = dev_secret
+        self.production_secret = production_secret
         self.versionID = versionID
         self.inProduction = inProduction
-
-        if isinstance(pairings, dict):
-            pairings = [pairings]
-        if isinstance(pairings, list):
-            [self.pair_actions(pairing) for pairing in pairings]
-
         return
 
-    def call(self, call_type, call_data, timeout=30):
+    def call(self, call_type, call_data, timeout=2):
         # """
         # sends a call to the api and returns the response as a string
         # call_type - should be one of: init, track, reinforce
@@ -65,23 +51,16 @@ class Dopamine(object):
         # prepare the api call data structure
         data = {
             'appID': self.appID,
-            'token': self.token,
             'versionID': self.versionID,
-            'build': self.build,
-            'ClientOS': self._client_os,
-            'ClientOSVersion': self._client_os_version,
-            'ClientAPIVersion' : self._client_sdk_version
+            'clientOS': self._client_os,
+            'clientOSVersion': self._client_os_version,
+            'clientSDKVersion' : self._client_sdk_version
         }
         if(self.inProduction):
-            data['key'] = self.production_key
+            data['secret'] = self.production_secret
         else:
-            data['key'] = self.dev_key
+            data['secret'] = self.dev_secret
 
-        if(call_type == 'init'):
-            data['rewardFunctions'] = self.reward_functions
-            data['feedbackFunctions'] = self.feedback_functions
-            data['actionPairings'] = self.action_pairings()
-            
         # add the specific call data
         data.update(call_data)
 
@@ -89,7 +68,7 @@ class Dopamine(object):
         data.update(make_time())
 
         # launch POST request
-        url = '{}/v2/app/{}/{}/'.format(self._server_url, self.appID, call_type)
+        url = '{}/v3/app/{}/'.format(self._server_url, call_type)
 
         if self._debug:
             print('[Debug] api call, type: {}'.format(call_type))
@@ -118,32 +97,23 @@ class Dopamine(object):
 
         return response
 
-    def init(self):
-        # """ init api call, only needs to be run once to register app internally """
-
-        init_call = {
-            'identity': [{'user': 'INIT'}]
-        }
-
-        return json.loads(self.call('init', init_call))
-
-    def track(self, identity, eventName, metaData):
+    def track(self, identity, actionID, metaData):
         # """ tracking api call """
 
         track_call = {
-            'identity': identity,
-            'eventName': eventName,
+            'primaryIdentity': identity,
+            'actionID': actionID,
             'metaData': metaData
         }
 
         return json.loads(self.call('track', track_call))
 
-    def reinforce(self, identity, eventName, metaData, timeout=10):
+    def reinforce(self, identity, actionID, metaData, timeout=2):
         # """ reinforce api call, will respond with default feedback function if response fails """
 
         reinforce_call = {
-            'identity': identity,
-            'eventName': eventName,
+            'primaryIdentity': identity,
+            'actionID': actionID,
             'metaData': metaData
         }
 
@@ -151,49 +121,6 @@ class Dopamine(object):
         if response:
             return json.loads(response)
 
-        for reinforcer in self.pairings[eventName]:
-            if reinforcer['type'] == 'Feedback':
-                return {
-                    'status': STATUS['ERROR'],
-                    'reinforcementFunction': reinforcer['functionName']
-                }
-
-    def pair_action_to_reinforcement(self, action_name, function_name, reward=False, constraint=[], objective=[]):
-        # """ pair an action to a response function, set reward to true for reinforcing responses """
-
-        pairing = {
-            'functionName': function_name,
-            'constraint': constraint,
-            'objective': objective,
-        }
-
-        if action_name not in self.actions:
-            self.actions.append(action_name)
-
-        if reward:
-            pairing['type'] = 'Reward'
-            if function_name not in self.reward_functions:
-                self.reward_functions.append(function_name)
-        else:
-            pairing['type'] = 'Feedback'
-            if function_name not in self.feedback_functions:
-                self.feedback_functions.append(function_name)
-
-        self.pairings.setdefault(action_name, []).append(pairing)
-        self.build = make_hash(self.action_pairings())
-
-        if self._debug:
-            print('[Debug] function {} paired to action {}'.format(function_name, action_name))
-
-        return
-
-    def action_pairings(self):
-        # """ get the action pairings in the javascript friendly structure """
-
-        return [
-            {'actionName': name, 'reinforcers': self.pairings[name]}
-            for name in self.actions
-        ]
 
 def make_time():
     # """ return a dictionary with the current UTC and localTime """
@@ -203,13 +130,3 @@ def make_time():
         'UTC': calendar.timegm(utcDateTime.utctimetuple()) * 1000,
         'localTime': time.time() * 1000
     }
-
-def make_hash(obj):
-    # """ create a SHA1 hexadecimal digest of a JSON compatible object """
-
-    string = json.dumps(obj)
-    hash_obj = hashlib.sha1(string);
-    return hash_obj.hexdigest()
-
-
-
