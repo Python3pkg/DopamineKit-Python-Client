@@ -23,7 +23,7 @@ class DopamineKit(object):
 
     _client_os = 'python'
     _client_os_version = sys.api_version
-    _client_sdk_version = '3.0.0'
+    _client_sdk_version = '3.1.0'
     _server_url = 'https://api.usedopamine.com/v3/app'
 
     _debug = True               # debug flag set to true for console messages
