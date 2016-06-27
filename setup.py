@@ -2,7 +2,7 @@ from distutils.core import setup
 setup(
   name = 'dopaminekit',
   packages = ['dopaminekit'], # this must be the same as the name above
-  version = '0.4',
+  version = '0.40',
   description = 'A library to use DopamineLabs machine learning API',
   author = 'Akash Desai',
   author_email = 'kash@usedopamine.com',
