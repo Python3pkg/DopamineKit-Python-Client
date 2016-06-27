@@ -1,5 +1,4 @@
-
-from dopamine import DopamineKit
+from dopaminekit import DopamineKit
 
 debug_mode = True
 

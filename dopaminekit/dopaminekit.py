@@ -1,6 +1,5 @@
 import urllib2
 import json
-import hashlib
 from datetime import datetime
 import calendar
 import time

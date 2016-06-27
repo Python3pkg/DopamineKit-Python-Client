@@ -1,2 +1,2 @@
-from dopamine import Dopamine
+from dopaminekit import dopaminekit
 
