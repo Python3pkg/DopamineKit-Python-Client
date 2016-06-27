@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-version = '0.50'
+version = '0.5'
 
 setup(name='dopaminekit',
       version=version,
@@ -13,7 +13,8 @@ After you have received your API key and configured the actions and reinforcemen
       keywords='machinelearning analytics dopamine reinforcement behavior',
       author='Akash Desai',
       author_email='kash@usedopamine.com',
-      url='https://usedopamine.com',
+      url = 'https://github.com/DopamineLabs/DopamineKit-Python-Client',
+      download_url = 'https://github.com/DopamineLabs/DopamineKit-Python-Client/tarball/'+version, # I'll explain this in a second
       license='MIT',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
