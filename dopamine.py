@@ -23,8 +23,8 @@ class DopamineKit(object):
     identity = []
 
     _client_os = 'python'
-    _client_os_version = sys.version
-    _client_sdk_version = '2.9.0'
+    _client_os_version = sys.api_version
+    _client_sdk_version = '3.0.0'
     _server_url = 'https://api.usedopamine.com/v3/app'
 
     _debug = True               # debug flag set to true for console messages
@@ -108,7 +108,7 @@ class DopamineKit(object):
                     print ('[DopamineKit] - request to DopamineAPI failed, bad status code. Returning "neutralResponse"\n{}'.format(json.dumps(response, indent=4)))
                     return "neutralResponse"
             except KeyError, e:
-                print('[DopamineKit] - bad response received, no "reinforcementDecision" found:\n' + json.dumps(response, indent=4))
+                print('[DopamineKit] - bad response received, no "reinforcementDecision" found:\n{}'.format(json.dumps(response, indent=4)))
         else:
             return response
 
