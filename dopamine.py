@@ -6,11 +6,6 @@ import calendar
 import time
 import sys
 
-STATUS = {
-    'OK': 200,
-    'ERROR': 100
-}
-
 class DopamineKit(object):
     """
     # Dopamine API interface class
@@ -90,29 +85,30 @@ class DopamineKit(object):
             if self._debug:
                 print('[DopamineKit] - api response:\n{}'.format(response))
 
-            if response['status'] != STATUS['OK']:
-                raise Exception('Error: request to dopamine api failed, bad status code.\n{}'.format(response))
-
         except urllib2.HTTPError, e:
             print('[DopamineKit] - HTTPError:\n' + str(e))
             return None
         except urllib2.URLError, e:
-            print('[DopamineKit] - URLError:\n' + str(e.reason))
+            print('[DopamineKit] - URLError:\n' + str(e))
             return None
         except httplib.HTTPException, e:
-            print('[DopamineKit] - HTTPException')
-            return None
-        except ValueError, e:
-            print ('here2')
+            print('[DopamineKit] - HTTPException:\n' + str(e))
             return None
         except Exception:
             import traceback
-            print('[DopamineKit] - generic exception: ' + traceback.format_exc())
+            print('[DopamineKit] - generic exception:\n' + traceback.format_exc())
             return None
 
 
         if(call_type == 'reinforce'):
-            return response['reinforcementDecision']
+            try:
+                if response['status'] == 200:
+                    return response['reinforcementDecision']
+                else:
+                    print ('[DopamineKit] - request to DopamineAPI failed, bad status code. Returning "neutralResponse"\n{}'.format(json.dumps(response, indent=4)))
+                    return "neutralResponse"
+            except KeyError, e:
+                print('[DopamineKit] - bad response received, no "reinforcementDecision" found:\n' + json.dumps(response, indent=4))
         else:
             return response
 
