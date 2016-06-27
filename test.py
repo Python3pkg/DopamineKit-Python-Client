@@ -1,61 +1,45 @@
+from dopaminekit import DopamineKit
 
-from dopamine import Dopamine
+debug_mode = True
 
-app_id = '543715d85b6b234b6e2c83ee'
-dev_key = '12be497b39cb5b8a3b7ccbc5129b24a0ee166706'
-prod_key = 'fdb803e8384f9cf7015e9b28e828ece3074df6e8'
-token = '32284346502274275543715d85b6b234b6e2c83ee'
+app_id = '570ffc491b4c6e9869482fbf'
+dev_secret = 'd388c7074d8a283bff1f01eb932c1c9e6bec3b10'
+prod_secret = '20af24a85fa00938a5247709fed395c31c89b142'
 
 # Create the Dopamine object
-dopa = Dopamine(app_id, dev_key, prod_key, token, "newVersionID", False)
-
-# Pair your actions and Reinforcement Functions
-# dopa.pair_actions({'actionName': 'newAction', 'rewardFunctions':['rf1', 'rf2'], 'feedbackFunctions':['ff1', 'ff2']})
-dopa.pair_action_to_reinforcement('action_name', 'name_for_feeback_function_1', reward=False)
-dopa.pair_action_to_reinforcement('action_name', 'name_for_reward_function_1', reward=True, constraint=[], objective=[])
-dopa.pair_action_to_reinforcement('action_name', 'name_for_reward_function_2', reward=True, constraint=[], objective=[])
-
-dopa.pair_action_to_reinforcement('a_different_action_name', 'name_for_feeback_function_2', reward=False)
-dopa.pair_action_to_reinforcement('a_different_action_name', 'name_for_reward_function_3', reward=True, constraint=[], objective=[])
-dopa.pair_action_to_reinforcement('a_different_action_name', 'name_for_reward_function_3', reward=True, constraint=[], objective=[])
-
-# Send your init call
-dopa.init()
+dopa = DopamineKit(app_id, dev_secret, prod_secret, "testing", False)
+dopa._debug = debug_mode
 
 # Send tracking call for analytics
-dopa.track([{'userID': 1138}], "testEvent1", [{'metaData':'value'}])
+dopa.track([{'userID': 1138}], "testEvent1", [{'metaDataKey':'value'}])
 
 # Define reward functions
 def rewardFunctionOne():
     print "WOOHOO!"
+    transitionUI()
 
 def rewardFunctionTwo():
     print "AWESOME!"
+    transitionUI()
 
 def rewardFunctionThree():
     print "WOW!"
+    transitionUI()
 
-def feedbackFunctionOne():
-    print "Acknowledged."
-
-def feedbackFunctionTwo():
-    print "Received."
+def transitionUI():
+    # continue the flow of your app
+    print "..."
 
 # Associate reward fucntions with their code-names
 reinforcement_functions = {
-    'name_for_reward_function_1': rewardFunctionOne,
-    'name_for_reward_function_2': rewardFunctionTwo,
-    'name_for_reward_function_3': rewardFunctionThree,
-    'name_for_feeback_function_1': feedbackFunctionOne,
-    'name_for_feeback_function_2': feedbackFunctionTwo
+    'stars': rewardFunctionOne,
+    'thumbsUp': rewardFunctionTwo,
+    'medalStar': rewardFunctionThree,
+    'neutralResponse': transitionUI
 }
 
 # Send reinforce call. Use response in a switch
-response = dopa.reinforce([{'userID': 1137}], "action_name", [{'metaData':'value'}])
-
-optimal_reinforcement = response
-if optimal_reinforcement['reinforcementFunction'] not in reinforcement_functions.keys():
-    raise Exception('Error: reinforcement function not found.')
-else:
-    reinforcement_functions[optimal_reinforcement['reinforcementFunction']]()
+reinforcementFunction = dopa.reinforce([{'userID': 1137}], "action1", [{'metaDataKey':'value'}])
+reinforcement_functions[reinforcementFunction]()
+# print reinforcementFunction
 
