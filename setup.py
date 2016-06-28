@@ -1,9 +1,9 @@
-from setuptools import setup, find_packages
-import sys, os
+from distutils.core import setup
 
 version = '0.6'
 
-setup(name='dopaminekit',
+setup(name='dopamine',
+      packages = ['dopamine'],
       version=version,
       description="A library to use DopamineLabs machine learning API",
       long_description="""\
@@ -13,6 +13,7 @@ This packages provides a framework for interacting with the Dopamine API from a 
       author='Akash Desai',
       author_email='kash@usedopamine.com',
       url='https://github.com/DopamineLabs/DopamineKit-Python-Client',
+      download_url='https://github.com/DopamineLabs/DopamineKit-Python-Client/tarball/'+version,
       license='MIT',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
