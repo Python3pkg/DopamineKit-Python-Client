@@ -1,6 +1,6 @@
 from distutils.core import setup
 
-version = '0.6'
+version = '0.7'
 
 setup(name='dopamine',
       packages = ['dopamine'],
@@ -15,7 +15,6 @@ This packages provides a framework for interacting with the Dopamine API from a 
       url='https://github.com/DopamineLabs/DopamineKit-Python-Client',
       download_url='https://github.com/DopamineLabs/DopamineKit-Python-Client/tarball/'+version,
       license='MIT',
-      packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
       zip_safe=True,
       install_requires=[
@@ -24,4 +23,4 @@ This packages provides a framework for interacting with the Dopamine API from a 
       entry_points="""
       # -*- Entry points: -*-
       """,
-      )
+)
