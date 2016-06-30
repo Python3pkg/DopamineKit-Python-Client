@@ -89,7 +89,7 @@ A tracking call should be used to record and communicate to DopamineAPI that a p
 ######General syntax
 
 ```
-Dopamine.track(actionID, identity, metaData=None):
+Dopamine.track(actionID, identity, metaData=None)
 ```
 
 ######Parameters:
@@ -108,7 +108,7 @@ A reinforcement call should be used when the user has performed a particular act
 ######General syntax
 
 ```
-Dopamine.reinforce(actionID, identity, metaData=None, timeout=5):
+Dopamine.reinforce(actionID, identity, metaData=None, timeout=5)
 ```
 
 ######Parameters:
