@@ -7,55 +7,78 @@ Get your free API key at [http://dashboard.usedopamine.com/](http://dashboard.us
 
 Learn more at [http://usedopamine.com](http://usedopamine.com)
 
-### Looking for an Android Example App?
+### Looking for an example?
 
-Check test.py for an example of how to use this package in your code.
+Check [/test.py](./test.py) for an example of how to use this package in your code.
 
 ## Set up DopamineKit
 
-  1. First, make sure you have received your API key and other credentials, which are in the configuration file __dopamineproperties.json__ automatically generated from the [Dopamine Developer Dashboard](http://dashboard.usedopamine.com). 
+  1. First, make sure you have received your API key and other credentials, which are automatically generated from the [Dopamine Developer Dashboard](http://dashboard.usedopamine.com). 
 
   2. Import DopamineKit by copying the source code from [`/dopaminekit/dopaminekit.py`](dopaminekit/dopaminekit.py)' or by using `pip` or `easy_install`
+  
   ```
-  easy_install dopaminekit
+  pip install dopaminekit
   ```
 
-  3. To use DopamineKit from library
+  3. First import the class `DopamineKit` from the library `dopamine`
 
   ```python
-  from dopaminekit import DopamineKit
+  from dopamine import DopamineKit
   ```
     
-  4. 
+  4. Create a DopamineKit object with your credentials passed in as Strings
   
+    ```
+    app_id = 'genereated from dashboard.usedopamine.com'
+    development_secret = 'genereated from dashboard.usedopamine.com'
+    production_secret = 'genereated from dashboard.usedopamine.com'
+    versionID = 'testing'
+    production_mode = False
+    debug_mode = True		# Prints out the sent/received data
+
+    
+    dopaminekit = DopamineKit(app_id, development_secret, production_secret, versionID, production_mode, debug_mode)
+    ...
+    
+    dopaminekit.track('testEvent1', '1138', [{'metaDataKey':'value'}])
+    ...
+    reinforcementFunction = dopaminekit.reinforce('action1', '1137')
+    
+    ```
+    
   5. Start using Dopamine! The main features of DopamineAPI are the `reinforce()` and `track()` functions. These should be added into the response functions of any _action_ to be reinforced or tracked.
-  
-
-### Actions that represent Habits
-
-Reinforce your apps ​_essential_​ actions; what users come to your app to do. Three actions is definitely enough, and one is often best. 
-
-Our "To Do List" app ​_exists_​ to help uses be more productive by completing items on their list. So we will reinforce that. 
-
-![Workspace screenshot](readme/Opaque workspace.png)
-
- - __Note:__ The possible return strings ["stars", "medalStar", "thumbsUp"] were configured on the [developer dashboard](http://dashboard.usedopamine.com).
-
-### Responding to an Action
-When the user completes a task, they will swipe it off of their check-list. When this happens, `DopamineKit.reinforce()` is called. 
-
- - __Note:__ The chosen form of reinforcement in this example app is using a `CandyBar` from DopamineKit. Developers should use visual reinforcement that meshes well with their UX, and the `CandyBar` is shown as a general solution.
-
-There are 4 possible paths, shown by the `if-else` statements, that can be taken based on the resulting `reinforcement` string:
-
- - 3 out of the 4 paths were chosen by the app developer on the [Dopamine Developer Dashboard](http://dashboard.usedopamine.com).
-
- - The default case, or “neutral response", no reward will be delivered. This builds anticipation for the next surprising reward.
   
   
 ## Super Users
 
 There are additional parameters for the `track()` and `reinforce()` functions that are used to gather rich information from your app and better create a user story of better engagement.
+
+========
+
+####Object Initialization
+
+The object initialization takes in the API credentials (appID, development and production secrets, and the versionID). There are also the options inProduction, which selects between the development and billed production mode, and debugmode, which prints out the sent and received API calls when set to True.
+
+######General syntax
+
+```
+dopaminekit = DopamineKit(appID, developmentSecret, productionSecret, versionID, inProduction, debugmode=False)
+```
+
+######Parameters:
+ - `appID: str` - Uniquely identifies your app, get this from your [developer dashboard](http://dev.usedopamine.com).
+
+ - `developmentSecret : str` - secret key for development
+
+ - `productionSecret : str` - secret key for production
+
+ - `versionID : str` -  this is a unique identifier that you choose that marks this implementation as unique in our system. This could be something like 'summer2015Implementation' or 'ClinicalTrial4'. Your `versionID` is what we use to keep track of what users are exposed to what reinforcement and how to best optimize that.
+
+ - `inProduction : bool` - indicates whether app is in production or development mode, when you're happy with how you're integrating Dopamine and ready to launch set this argument to `true`. This will activate optimized reinforcement and start your billing cycle. While set to `false` your app will receive dummy reinforcement, new users will not be registered with our system, and no billing occurs.
+
+ - `debugmode : bool` - Enables debug mode, where the sent and received data are printed
+
 
 ========
 
@@ -66,18 +89,15 @@ A tracking call should be used to record and communicate to DopamineAPI that a p
 ######General syntax
 
 ```
-Dopamine.track(context, actionID, metaData, secondaryIdentity)
+Dopamine.track(actionID, identity, metaData=None):
 ```
 
 ######Parameters:
+ - `actionID : str` - A descriptive name for action that the user has performed
 
- - `context: Context` - is used to get API credentials from `res/raw/dopamineproperties.json` of the context's package
- 
- - `actionID: String` - is a unique name for the action that the user has performed
+ - `identity : str` - A string used to identify a particular user, such as an email or username or UUID.
 
- - `metaData: Map<String, String>` - (optional) is any additional data to be sent to the API
-
- - `secondaryIdentity: String` - (optional) is an extra identifier (like login credentials) used to identify a particular user
+ - `metaData : dict = None` - An optional dictionary containing extra data about the user or environment to generate better results.
 
 ========
 
@@ -88,35 +108,16 @@ A reinforcement call should be used when the user has performed a particular act
 ######General syntax
 
 ```
-Dopamine.reinforce(context, actionID, metaData, secondaryIdentity, callback)
+Dopamine.reinforce(actionID, identity, metaData=None, timeout=5):
 ```
 
 ######Parameters:
 
- - `context: Context` - is used to get API credentials from `res/raw/dopamineproperties.json` of the context's package
- 
- - `actionID: String` - is a unique name for the action that the user has performed
+ - `actionID : str` - A descriptive name for action that the user has performed
 
- - `metaData: Map<String, String>` - (optional) is any additional data to be sent to the API
+ - `identity : str` - A string used to identify a particular user, such as an email or username or UUID.
 
- - `secondaryIdentity: String` - (optional) is an extra identifier (like login credentials) used to identify a particular user across apps
+ - `metaData : dict = None` - An optional dictionary containing extra data about the user or environment to generate better results.
 
- - `callback: DopamineKit.ReinforcementCallback` - is an object on which `onReinforcement(String reinforcement)` is called when a response is received
+- `timeout : int = 5` - An optional timeout parameter in seconds to wait for a response. Default is 5.
 
-The reinforcement call itself takes the actionID as a required parameter, as well as a DopamineKit.ReinforcementCallback object, which is triggered as a callback for the reinforcement response.
-
-========
-
-####dopamineproperties.json
-
-`dopamineproperties.json ` _must_ be contained within the directory _`app/src/main/res/raw`_. This property list contains configuration variables needed to make valid calls to the API, all of which can be found on your developer dashboard:
-
- - `appID: String` - uniquely identifies your app, get this from your [developer dashboard](http://dev.usedopamine.com).
-
- - `versionID: String` -  this is a unique identifier that you choose that marks this implementation as unique in our system. This could be something like 'summer2015Implementation' or 'ClinicalTrial4'. Your `versionID` is what we use to keep track of what users are exposed to what reinforcement and how to best optimize that.
-
- - `inProduction: Bool` - indicates whether app is in production or development mode, when you're happy with how you're integrating Dopamine and ready to launch set this argument to `true`. This will activate optimized reinforcement and start your billing cycle. While set to `false` your app will receive dummy reinforcement, new users will not be registered with our system, and no billing occurs.
-
- - `productionSecret: String` - secret key for production
-
- - `developmentSecret: String` - secret key for development
