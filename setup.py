@@ -1,9 +1,9 @@
 from setuptools import setup
 
-version = '3.0'
+version = '0.9.3'
 
-setup(name='dopamine',
-      packages = ['dopamine'],
+setup(name='dopaminekit',
+      packages = ['dopaminekit'],
       version=version,
       description="A library to use DopamineLabs machine learning API",
       long_description="""\

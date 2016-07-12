@@ -1,5 +1,5 @@
 # using library installed from pip or easy_install
-from dopamine import DopamineKit
+from dopaminekit import DopamineKit
 
 app_id = '570ffc491b4c6e9869482fbf'
 production_secret = '20af24a85fa00938a5247709fed395c31c89b142'
@@ -14,44 +14,43 @@ dopaminekit = DopamineKit(app_id, development_secret, production_secret, version
 dopaminekit._debugmode = True    # Prints out the sent/received data
 
 
-"""
-Tracking Calls
-	Send tracking call for analytics to the DopamineAPI
+""" 
+	Sends a tracking call to the DopamineAPI
 
-Syntax:
-----------
-	dopaminekit.track(str actionID, str identity, dict metaData = None)
-
-Parameters:
-----------
+	Parameters:
+	----------
 	- actionID : str
-	    A descriptive name for the action to be tracked.
+	    A descriptive name for action that the user has performed
 
 	- identity : str
-	    A string to identity the user, such as an email or username or UUID.
+	    A string used to identify a particular user, such as an email or username or UUID.
 
 	- metaData : dict = None
 	    An optional dictionary containing extra data about the user or environment to generate better results.
+
+	Returns:
+	----------
+	- responseStatus : json
+	    Contains the key "status". If "status" is not 200, then also contains the key "errors"
 """
 
-dopaminekit.track('action1', '1138', {'key':'value'})
+metaData = {"calories":"200"}
+dopaminekit.track('appOpened', '1138', metaData)
 
 
-"""
-Reinforcement Calls
+
+
+
+""" 
 	Sends a reinforcement call to the DopamineAPI and returns the reinforcement decision
 
-Syntax:
-----------
-	response = dopaminekit.reinforce(str actionID, str identity, dict metaData = None, timeout = 5)
-
-Parameters:
-----------
+	Parameters:
+	----------
 	- actionID : str
-	    A descriptive name for the action to be tracked.
+	    A descriptive name for action that the user has performed
 
 	- identity : str
-	    A string to identity the user, such as an email or username or UUID.
+	    A string used to identify a particular user, such as an email or username or UUID.
 
 	- metaData : dict = None
 	    An optional dictionary containing extra data about the user or environment to generate better results.
@@ -59,9 +58,13 @@ Parameters:
 	- timeout : int = 5
 	    An optional timeout parameter in seconds to wait for a response. Default is 5.
 
+	Returns:
+	----------
+	- reinforcementDecision : str
+	    A reinforcement decision configured on dashboard.usedopamine.com, otherwise 'neutralResponse'.
 """
 
-reinforcementFunction = dopaminekit.reinforce('action1', '1137')
+reinforcementFunction = dopaminekit.reinforce('action1', '1137', None, 1.4)
 print "Reinforcement decision: ", reinforcementFunction
 
 # Within the demo, the possible responses are:

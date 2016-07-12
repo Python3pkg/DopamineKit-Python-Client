@@ -6,6 +6,15 @@ import time
 import sys
 
 class DopamineKit(object):
+
+    _client_os = 'python'
+    _client_os_version = str(sys.api_version)
+    _client_sdk_version = '3.0.0'
+    _server_url = 'https://api.usedopamine.com/v3/app'
+
+############
+## External / Public
+############
     def __init__(self, appID, developmentSecret, productionSecret, versionID, inProduction, debugmode = False):
         """
         Creates a DopamineKit object to communicate with the DopamineAPI
@@ -56,24 +65,32 @@ class DopamineKit(object):
         - metaData : dict = None
             An optional dictionary containing extra data about the user or environment to generate better results.
 
+        Returns:
+        ----------
+        - responseStatus : json
+            Contains the key "status". If "status" is not 200, then also contains the key "errors"
         """
 
         if isinstance(actionID, str)==False:
-            print ('[DopamineKit] - tracking() has invalid "actionID"-"{}"'.format(actionID))
+            print ('[DopamineKit] - track() has invalid actionID: {} is not a string'.format(actionID))
             return
         if isinstance(identity, str)==False:
-            print ('[DopamineKit] - tracking() has invalid "identity"-"{}"'.format(identity))
+            print ('[DopamineKit] - track() has invalid identity: {} is not a string'.format(identity))
             return
 
         track_call = {
             'primaryIdentity': identity,
             'actionID': actionID,
         }
+
         if metaData!=None and isinstance(metaData, dict)==False:
-            print ('[DopamineKit] - tracking() has invalid "metaData"-"{}" - ignoring metaData and sending call'.format(metaData))
+            if(self._debugmode):
+                print ('[DopamineKit] - track() has invalid metaData: {} is not a dict'.format(metaData))
+                print ('[DopamineKit] - ignoring metaData and then sending call')
         else:
             track_call['metaData'] = metaData
 
+        # return a json object with 'status' and 'errors'
         return self.call('track', track_call, 5)
 
 
@@ -95,30 +112,56 @@ class DopamineKit(object):
         - timeout : int = 5
             An optional timeout parameter in seconds to wait for a response. Default is 5.
 
+        Returns:
+        ----------
+        - reinforcementDecision : str
+            A reinforcement decision configured on dashboard.usedopamine.com, otherwise 'neutralResponse'.
         """
+
+        if isinstance(actionID, str)==False:
+            print ('[DopamineKit] - reinforce() has invalid actionID: {} is not a string'.format(actionID))
+            return
+        if isinstance(identity, str)==False:
+            print ('[DopamineKit] - reinforce() has invalid identity: {} is not a string'.format(identity))
+            return
 
         reinforce_call = {
             'primaryIdentity': identity,
             'actionID': actionID,
-            'metaData': metaData
         }
 
+        if metaData!=None and isinstance(metaData, dict)==False:
+            if self._debugmode:
+                print ('[DopamineKit] - reinforce() has invalid metaData: {} is not a dict'.format(metaData))
+                print ('[DopamineKit] - ignoring metaData and then sending call')
+        else:
+            reinforce_call['metaData'] = metaData
+
+        # Get a json object back
         response = self.call('reinforce', reinforce_call, timeout)
-        return response
+
+        # Extract reinforcementDecision from response, else return default 'neutralResponse'
+        reinforcementDecision = 'neutralResponse'
+        try:
+            if response['status'] == 200:
+                reinforcementDecision = response['reinforcementDecision']
+            else:
+                if self._debugmode:
+                    print ('[DopamineKit] - reinforce call to DopamineAPI failed, status code:{}. Returning {} as default.'.format(response['status'], defaultReinforcement))
+                    print ('[DopamineKit] - {}'.format(json.dumps(response, indent=4)))
+                # reinforcementDecision = defaultReinforcement
+        except KeyError, e:
+            if self._debugmode:
+                print ('[DopamineKit] - looks like something went wrong, no "reinforcementDecision" found. Returning {} as default.'.format(defaultReinforcement))
+                print ('[DopamineKit] - {}'.format(json.dumps(response, indent=4)))
+            # reinforcementDecision = defaultReinforcement
+        return reinforcementDecision
 
 
 
 ############
 ## Internal / Private
 ############
-
-    _client_os = 'python'
-    _client_os_version = str(sys.api_version)
-    _client_sdk_version = '3.0.0'
-    _server_url = 'https://api.usedopamine.com/v3/app'
-
-    # _debugmode = False               # Set to true to print sent/received messages. Set in __init__
-
     
     def call(self, call_type, call_data, timeout):
         """
@@ -164,42 +207,33 @@ class DopamineKit(object):
         url = '{}/{}/'.format(self._server_url, call_type)
 
         if self._debugmode:
-            print('[DopamineKit] - api call type: {} to url: {}'.format(call_type, url))
-            print('[DopamineKit] - call data: {}'.format(data))
+            print('[DopamineKit] - sending {} call to {}'.format(call_type, url))
+            print('[DopamineKit] - {} call data: {}'.format(call_type, data))
 
         req = urllib2.Request(url, json.dumps(data), {'Content-Type': 'application/json'})
         try:
             raw_data = urllib2.urlopen(req, timeout=timeout).read()
+            # turn into json object
             response = json.loads(raw_data)
             if self._debugmode:
-                print('[DopamineKit] - api response:\n{}'.format(response))
+                print('[DopamineKit] - {} response: {}'.format(call_type, response))
 
         except urllib2.HTTPError, e:
-            print('[DopamineKit] - HTTPError:\n' + str(e))
+            print('[DopamineKit] - HTTPError:' + str(e))
             return None
         except urllib2.URLError, e:
-            print('[DopamineKit] - URLError:\n' + str(e))
+            print('[DopamineKit] - URLError:' + str(e))
             return None
         except httplib.HTTPException, e:
-            print('[DopamineKit] - HTTPException:\n' + str(e))
+            print('[DopamineKit] - HTTPException:' + str(e))
             return None
         except Exception:
             import traceback
-            print('[DopamineKit] - generic exception:\n' + traceback.format_exc())
+            print('[DopamineKit] - generic exception:' + traceback.format_exc())
             return None
 
+        return response
 
-        if(call_type == 'reinforce'):
-            try:
-                if response['status'] == 200:
-                    return response['reinforcementDecision']
-                else:
-                    print ('[DopamineKit] - request to DopamineAPI failed, bad status code. Returning "neutralResponse"\n{}'.format(json.dumps(response, indent=4)))
-                    return "neutralResponse"
-            except KeyError, e:
-                print('[DopamineKit] - bad response received, no "reinforcementDecision" found:\n{}'.format(json.dumps(response, indent=4)))
-        else:
-            return response
 
     def get_time_utc_local(self):
         """ 
