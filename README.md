@@ -4,7 +4,7 @@
 
 [![PyPI](https://img.shields.io/pypi/l/dopaminekit.svg?maxAge=2592000)](https://pypi.python.org/pypi/dopaminekit/)
 
-[![PyPI](https://img.shields.io/pypi/format/dopaminekit.svg?maxAge=2592000)](https://pypi.python.org/pypi/dopaminekit/)
+[![PyPI](https://img.shields.io/pypi/format/dopaminekit.svg?maxAge=2592000)](./dopaminekit/)
 
 [![PyPI](https://img.shields.io/pypi/implementation/dopaminekit.svg?maxAge=2592000)](https://pypi.python.org/pypi/dopaminekit)
 
