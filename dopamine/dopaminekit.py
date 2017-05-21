@@ -1,4 +1,4 @@
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import json
 from datetime import datetime
 import calendar
@@ -59,10 +59,10 @@ class DopamineKit(object):
         """
 
         if isinstance(actionID, str)==False:
-            print ('[DopamineKit] - tracking() has invalid "actionID"-"{}"'.format(actionID))
+            print(('[DopamineKit] - tracking() has invalid "actionID"-"{}"'.format(actionID)))
             return
         if isinstance(identity, str)==False:
-            print ('[DopamineKit] - tracking() has invalid "identity"-"{}"'.format(identity))
+            print(('[DopamineKit] - tracking() has invalid "identity"-"{}"'.format(identity)))
             return
 
         track_call = {
@@ -70,7 +70,7 @@ class DopamineKit(object):
             'actionID': actionID,
         }
         if metaData!=None and isinstance(metaData, dict)==False:
-            print ('[DopamineKit] - tracking() has invalid "metaData"-"{}" - ignoring metaData and sending call'.format(metaData))
+            print(('[DopamineKit] - tracking() has invalid "metaData"-"{}" - ignoring metaData and sending call'.format(metaData)))
         else:
             track_call['metaData'] = metaData
 
@@ -137,7 +137,7 @@ class DopamineKit(object):
         """
 
         if(call_type != 'track' and call_type != 'reinforce'):
-            print ('[DopamineKit] - invalid call_type:{}'.format(call_type))
+            print(('[DopamineKit] - invalid call_type:{}'.format(call_type)))
             return None
 
         # prepare the api call data structure
@@ -164,28 +164,28 @@ class DopamineKit(object):
         url = '{}/{}/'.format(self._server_url, call_type)
 
         if self._debugmode:
-            print('[DopamineKit] - api call type: {} to url: {}'.format(call_type, url))
-            print('[DopamineKit] - call data: {}'.format(data))
+            print(('[DopamineKit] - api call type: {} to url: {}'.format(call_type, url)))
+            print(('[DopamineKit] - call data: {}'.format(data)))
 
-        req = urllib2.Request(url, json.dumps(data), {'Content-Type': 'application/json'})
+        req = urllib.request.Request(url, json.dumps(data), {'Content-Type': 'application/json'})
         try:
-            raw_data = urllib2.urlopen(req, timeout=timeout).read()
+            raw_data = urllib.request.urlopen(req, timeout=timeout).read()
             response = json.loads(raw_data)
             if self._debugmode:
-                print('[DopamineKit] - api response:\n{}'.format(response))
+                print(('[DopamineKit] - api response:\n{}'.format(response)))
 
-        except urllib2.HTTPError, e:
-            print('[DopamineKit] - HTTPError:\n' + str(e))
+        except urllib.error.HTTPError as e:
+            print(('[DopamineKit] - HTTPError:\n' + str(e)))
             return None
-        except urllib2.URLError, e:
-            print('[DopamineKit] - URLError:\n' + str(e))
+        except urllib.error.URLError as e:
+            print(('[DopamineKit] - URLError:\n' + str(e)))
             return None
-        except httplib.HTTPException, e:
-            print('[DopamineKit] - HTTPException:\n' + str(e))
+        except httplib.HTTPException as e:
+            print(('[DopamineKit] - HTTPException:\n' + str(e)))
             return None
         except Exception:
             import traceback
-            print('[DopamineKit] - generic exception:\n' + traceback.format_exc())
+            print(('[DopamineKit] - generic exception:\n' + traceback.format_exc()))
             return None
 
 
@@ -194,10 +194,10 @@ class DopamineKit(object):
                 if response['status'] == 200:
                     return response['reinforcementDecision']
                 else:
-                    print ('[DopamineKit] - request to DopamineAPI failed, bad status code. Returning "neutralResponse"\n{}'.format(json.dumps(response, indent=4)))
+                    print(('[DopamineKit] - request to DopamineAPI failed, bad status code. Returning "neutralResponse"\n{}'.format(json.dumps(response, indent=4))))
                     return "neutralResponse"
-            except KeyError, e:
-                print('[DopamineKit] - bad response received, no "reinforcementDecision" found:\n{}'.format(json.dumps(response, indent=4)))
+            except KeyError as e:
+                print(('[DopamineKit] - bad response received, no "reinforcementDecision" found:\n{}'.format(json.dumps(response, indent=4))))
         else:
             return response
 

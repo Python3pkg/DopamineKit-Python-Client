@@ -62,7 +62,7 @@ Parameters:
 """
 
 reinforcementFunction = dopaminekit.reinforce('action1', '1137')
-print "Reinforcement decision: ", reinforcementFunction
+print("Reinforcement decision: ", reinforcementFunction)
 
 # Within the demo, the possible responses are:
 # [   'stars'
